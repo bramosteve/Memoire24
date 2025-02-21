@@ -1,0 +1,14 @@
+{% extends 'layouts/box.html' %}
+
+{% block content %}
+
+<h1>Supprimer le Compte</h1>
+<p>Etes-vous sûr de vouloir supprimer votre compte ?</p>
+
+<form method='POST'>
+    {% csrf_token %}
+    <button type="submit" class="button-red mt-6">Oui,je souhaite supprimer le compte</button>
+    <a class="button button-gray ml-1" href="{{ request.META.HTTP_REFERER }}">Annuler</a>
+</form>
+
+{% endblock %}
