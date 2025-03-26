@@ -67,13 +67,31 @@
                     
                    
                     {% csrf_token %}
-                    {{ form.body }}
-                    <button class="btn btn-secondary ms-2" type="submit">
-                        <span class="input-group-text send_btn">
-                            <i class="fas fa-location-arrow"></i>
-                        </span>
-                    </button>
+                    
+                    <div class="flex items-center space-x-4">
+                        {{ form.body }}
+                        <div class="bg-blue-500 text-white px- py-0 rounded">
+                            <button class="" type="submit">
+                                <span class="input-group-text send_btn">
+                                    <i class="fas fa-location-arrow"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <form id="chat_file_form" enctype="multipart/form-data" class="flex items-center w-full" 
+                        hx-post="{% url 'chat-file-upload' chat_group.group_name %}"
+                        hx-target="#chat_messages"
+                        hx-swap="beforeend" 
+                        _="on htmx:beforeSend reset() me" >
+                        {% csrf_token %}
+                        <input type="file" name="file" id="id_file" class="!bg-transparent text-gray-400">
+                        <button type="submit" class="whitespace-nowrap !text-sm !py-3 !px-4 h-fit">Envoyer ficher</button>
+                     </form>
+                    </div>
                 </form>
+               
             </div>
         </div>
     </div>
@@ -86,13 +104,41 @@
 
 {% endblock %}
 {% block javascript %}
-     <script>
-        function scrollToBottom(){
-            const container=document.getElementById('chat_container');
-            container.scrollTop=container.scrollHeigth;
-        }
-        scrollToBottom()
-     </script>
+<script>
+    // Fonction pour vérifier que le message n'est pas vide
+    function validateMessage() {
+        const messageField = document.querySelector('[name="body"]'); // Le champ de message
+        const messageContent = messageField.value.trim(); // On enlève les espaces avant et après
 
-     
+        if (messageContent === '') {
+            alert('Le message ne peut pas être vide !');
+            return false; // Empêche l'envoi du formulaire
+        }
+
+        return true; // Permet l'envoi du formulaire si le message n'est pas vide
+    }
+
+    // Fonction pour faire défiler jusqu'au bas
+    function scrollToBottom() {
+        const container = document.getElementById('chat_container');
+        // Faire défiler le conteneur jusqu'à la fin
+        container.scrollTo(0, container.scrollHeight);
+    }
+
+    // Défilement automatique vers le dernier message après le chargement de la page
+    window.onload = function() {
+        const lastMessage = document.querySelector('#chat_messages li:last-child');
+        if (lastMessage) {
+            lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    };
+
+    // Appel pour le défilement automatique lors de l'envoi du message
+    document.getElementById("chat_message_form").onsubmit = function() {
+        setTimeout(scrollToBottom, 500); // Attendre un peu pour le rafraîchissement
+    };
+
+    // Défilement immédiat au bas lorsque la page est chargée
+    scrollToBottom();
+</script>
 {% endblock %}

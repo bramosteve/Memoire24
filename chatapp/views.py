@@ -1,6 +1,9 @@
 from django.shortcuts import render,get_object_or_404,redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import HttpResponse
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from django.http import Http404
 from .models import *
 from .forms import *
@@ -12,7 +15,6 @@ def chat_view(request, chatroom_name='public-chat'):
     chat_messages = chat_group.chat_messages.all()[:30]
     form = ChatmessageCreateForm()
    
-    
     other_user = None
     if chat_group.is_private:
         if request.user not in chat_group.members.all():
@@ -53,27 +55,27 @@ def chat_view(request, chatroom_name='public-chat'):
     
     return render(request, 'chatapp/chat.html', context)
 
-def get_or_create_chatroom(request, username):
+def get_or_create_chatroom(request,username,):
     if request.user.username == username:
         return redirect('home')
     
-    other_user = User.objects.get(username = username)
-    my_chatrooms = request.user.chat_groups.filter(is_private=True)
-    #self.group = ChatGroup.objects.filter(group_name=self.group_name).first()
-    
-    
+    other_user=User.objects.get(username=username)
+    my_chatrooms=request.user.chat_groups.filter(is_private=True)
     if my_chatrooms.exists():
         for chatroom in my_chatrooms:
             if other_user in chatroom.members.all():
-                chatroom = chatroom
+                chatroom=chatroom
                 break
             else:
-                chatroom = ChatGroup.objects.create(is_private = True)
-                chatroom.members.add(other_user, request.user)
+                chatroom=ChatGroup.objects.create(is_private=True)
+                chatroom.members.add(other_user,request.user)
     else:
-        chatroom = ChatGroup.objects.create(is_private = True)
-        chatroom.members.add(other_user, request.user)
-        
+        chatroom=ChatGroup.objects.create(is_private=True)
+        chatroom.members.add(other_user,request.user)
+
+
+    if not chatroom.group_name:
+        raise ValueError("Le nom du chatroom est invalide.")
     return redirect('chatroom', chatroom.group_name)
 
 @login_required
@@ -146,7 +148,7 @@ def chatroom_leave_view(request, chatroom_name):
         messages.success(request, 'Quitter le group')
         return redirect('home')
     
-"""   
+
 def chat_file_upload(request, chatroom_name):
     chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
     
@@ -167,4 +169,4 @@ def chat_file_upload(request, chatroom_name):
         )
     return HttpResponse()
 
-"""
+

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import shortuuid
+from PIL import Image
 
 # Create your models here.
 
@@ -82,6 +83,7 @@ class GroupMessage(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     body = models.CharField(max_length=300, blank=True, null=True)
     encrypted_body = models.TextField(blank=True, null=True)  # Champ pour stocker le message chiffré
+    file = models.FileField(upload_to='files/', blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -106,3 +108,12 @@ class GroupMessage(models.Model):
 
     class Meta:
         ordering = ['-created']
+
+    @property    
+    def is_image(self):
+        try:
+            image = Image.open(self.file) 
+            image.verify()
+            return True 
+        except:
+            return False
